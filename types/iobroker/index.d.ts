@@ -1,4 +1,4 @@
-// Type definitions for ioBroker 3.2
+// Type definitions for ioBroker 3.3
 // Project: https://github.com/ioBroker/ioBroker, http://iobroker.net
 // Definitions by: AlCalzone <https://github.com/AlCalzone>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -11,6 +11,9 @@
 /// <reference types="node" />
 /// <reference path="./objects.d.ts" />
 import * as fs from 'fs';
+export {}; // avoids exporting AtLeastOne into the global scope
+
+type AtLeastOne<T, U = {[K in keyof T]-?: T[K] }> = { [K in keyof U]: {[P in K]: U[P]} }[keyof U];
 
 declare global {
     namespace ioBroker {
@@ -26,9 +29,11 @@ declare global {
             sensor_reports_error = 0x84,
         }
 
+        type StateValue = string | number | boolean | null;
+
         interface State {
             /** The value of the state. */
-            val: string | number | boolean | any[] | Record<string, any> | null;
+            val: StateValue;
 
             /** Direction flag: false for desired value and true for actual value. Default: false. */
             ack: boolean;
@@ -43,18 +48,19 @@ declare global {
             from: string;
 
             /** The user who set this value */
-            user?: string;
+            user?: string | undefined;
 
             /** Optional time in seconds after which the state is reset to null */
-            expire?: number;
+            expire?: number | undefined;
 
             /** Optional quality of the state value */
-            q?: StateQuality;
+            q?: StateQuality | undefined;
 
             /** Optional comment */
-            c?: string;
+            c?: string | undefined;
         }
-        type SettableState = Partial<Omit<State, 'val'>> & Pick<State, 'val'>;
+
+        type SettableState = AtLeastOne<State>;
 
         type Session = any; // TODO: implement
 
@@ -81,7 +87,7 @@ declare global {
             /** The access rights for users/groups */
             users: ObjectOperationPermissions;
             /** The access rights for states */
-            state?: ObjectOperationPermissions;
+            state?: ObjectOperationPermissions | undefined;
         }
         /** Defined the complete set of access rights a user has */
         interface PermissionSet extends ObjectPermissions {
@@ -158,11 +164,11 @@ declare global {
         /** Parameters for adapter.getObjectView */
         interface GetObjectViewParams {
             /** First id to include in the return list */
-            startkey?: string;
+            startkey?: string | undefined;
             /** Last id to include in the return list */
-            endkey?: string;
+            endkey?: string | undefined;
             /** Whether docs should be included in the return list */ // TODO: What are docs?
-            include_docs?: boolean;
+            include_docs?: boolean | undefined;
         }
 
         /** Parameters for adapter.getObjectList */
@@ -240,19 +246,19 @@ declare global {
         }
 
         interface GetHistoryOptions {
-            instance?: string;
-            start?: number;
-            end?: number;
-            step?: number;
-            count?: number;
-            from?: boolean;
-            ack?: boolean;
-            q?: boolean;
-            addID?: boolean;
-            limit?: number;
-            ignoreNull?: boolean;
+            instance?: string | undefined;
+            start?: number | undefined;
+            end?: number | undefined;
+            step?: number | undefined;
+            count?: number | undefined;
+            from?: boolean | undefined;
+            ack?: boolean | undefined;
+            q?: boolean | undefined;
+            addID?: boolean | undefined;
+            limit?: number | undefined;
+            ignoreNull?: boolean | undefined;
             sessionId?: any;
-            aggregate?: 'minmax' | 'min' | 'max' | 'average' | 'total' | 'count' | 'none';
+            aggregate?: 'minmax' | 'min' | 'max' | 'average' | 'total' | 'count' | 'none' | undefined;
         }
 
         interface AdapterOptions {
@@ -260,47 +266,47 @@ declare global {
             name: string;
 
             /** path to adapter */
-            dirname?: string;
+            dirname?: string | undefined;
 
             /** if the global system config should be included in the created object. Default: false */
-            systemConfig?: boolean;
+            systemConfig?: boolean | undefined;
 
             /** provide alternative global configuration for the adapter. Default: null */
             config?: any;
 
             /** instance of the created adapter. Default: null */
-            instance?: number;
+            instance?: number | undefined;
 
             /** If the adapter needs access to the formatDate function to format dates according to the global settings. Default: false */
-            useFormatDate?: boolean;
+            useFormatDate?: boolean | undefined;
 
             /** If the adapter collects logs from all adapters (experts only). Default: false */
-            logTransporter?: boolean;
+            logTransporter?: boolean | undefined;
 
             /** Handler for changes of subscribed objects */
-            objectChange?: ObjectChangeHandler;
+            objectChange?: ObjectChangeHandler | undefined;
             /** Handler for received adapter messages. Can only be used if messagebox in io-package.json is set to true. */
-            message?: MessageHandler;
+            message?: MessageHandler | undefined;
             /** Handler for changes of subscribed states */
-            stateChange?: StateChangeHandler;
+            stateChange?: StateChangeHandler | undefined;
             /** Will be called when the adapter is intialized */
-            ready?: ReadyHandler;
+            ready?: ReadyHandler | undefined;
             /** Will be called on adapter termination */
-            unload?: UnloadHandler;
+            unload?: UnloadHandler | undefined;
             /** Will be called when ioBroker detects an unhandled error in the adapter. Return `true` to signal that the error was handled and the adapter does not need to be restarted. */
-            error?: ErrorHandler;
+            error?: ErrorHandler | undefined;
 
             /** if true, stateChange will be called with an id that has no namespace, e.g. "state" instead of "adapter.0.state". Default: false */
-            noNamespace?: boolean;
+            noNamespace?: boolean | undefined;
 
             /** If true, the adapter will have a property `oObjects` that contains a live cache of the adapter's objects */
-            objects?: boolean;
+            objects?: boolean | undefined;
 
             /** If true, the adapter will have a property `oStates` that contains a live cache of the adapter's states */
-            states?: boolean;
+            states?: boolean | undefined;
 
             /** Whether the adapter should warn if states are set without an corresponding existing object. Default: `true` */
-            strictObjectChecks?: boolean;
+            strictObjectChecks?: boolean | undefined;
         } // end interface AdapterOptions
 
         // tslint:disable-next-line:no-empty-interface
@@ -341,17 +347,20 @@ declare global {
              *
              * NOTE: This is only defined if the adapter was initialized with the option `objects: true`.
              */
-            oObjects?: Record<string, ioBroker.Object | undefined>;
+            oObjects?: Record<string, ioBroker.Object | undefined> | undefined;
             /**
              * Contains a live cache of the adapter's states.
              *
              * NOTE: This is only defined if the adapter was initialized with the option `states: true`.
              */
-            oStates?: Record<string, ioBroker.State | undefined>;
+            oStates?: Record<string, ioBroker.State | undefined> | undefined;
 
-            /*    ===============================
-                Functions defined in adapter.js
-                =============================== */
+            /** Can be used to test for forbidden chars in object IDs */
+            readonly FORBIDDEN_CHARS: RegExp;
+
+            /* ===============================
+               Functions defined in adapter.js
+               =============================== */
 
             /**
              * Helper function that looks for first free TCP port starting with the given one.
@@ -366,7 +375,7 @@ declare global {
             getPortAsync(port: number): Promise<number>;
 
             /** Stops the adapter. Note: Is not always defined. */
-            stop?: () => void;
+            stop?: (() => void) | undefined;
 
             // ==============================
             // GENERAL
@@ -724,7 +733,7 @@ declare global {
             getObjectList(params: GetObjectListParams | null, callback: GetObjectListCallback): void;
             getObjectList(
                 params: GetObjectListParams | null,
-                options: { sorted?: boolean } | Record<string, any>,
+                options: { sorted?: boolean | undefined } | Record<string, any>,
                 callback: GetObjectListCallback,
             ): void;
             /**
@@ -734,7 +743,7 @@ declare global {
              */
             getObjectListAsync(
                 params: GetObjectListParams | null,
-                options?: { sorted?: boolean } | Record<string, any>,
+                options?: { sorted?: boolean | undefined } | Record<string, any>,
             ): GetObjectListPromise;
 
             // ==============================
@@ -745,24 +754,24 @@ declare global {
             // tslint:disable:unified-signatures
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 callback?: SetStateCallback,
             ): void;
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 callback?: SetStateCallback,
             ): void;
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options: unknown,
                 callback?: SetStateCallback,
             ): void;
             setState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateCallback,
@@ -770,41 +779,41 @@ declare global {
             /** Writes a value into the states DB. */
             setStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack?: boolean,
             ): SetStatePromise;
             setStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options?: unknown,
             ): SetStatePromise;
             setStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
             ): SetStatePromise;
             /** Writes a value into the states DB only if it has changed. */
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 callback?: SetStateChangedCallback,
             ): void;
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 callback?: SetStateChangedCallback,
             ): void;
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options: unknown,
                 callback?: SetStateChangedCallback,
             ): void;
             setStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateChangedCallback,
@@ -812,41 +821,41 @@ declare global {
             /** Writes a value into the states DB only if it has changed. */
             setStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack?: boolean,
             ): SetStateChangedPromise;
             setStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options?: unknown,
             ): SetStateChangedPromise;
             setStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
             ): SetStateChangedPromise;
             /** Writes a value (which might not belong to this adapter) into the states DB. */
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 callback?: SetStateCallback,
             ): void;
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 callback?: SetStateCallback,
             ): void;
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options: unknown,
                 callback?: SetStateCallback,
             ): void;
             setForeignState(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateCallback,
@@ -854,41 +863,41 @@ declare global {
             /** Writes a value (which might not belong to this adapter) into the states DB. */
             setForeignStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack?: boolean,
             ): SetStatePromise;
             setForeignStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options?: unknown,
             ): SetStatePromise;
             setForeignStateAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
             ): SetStatePromise;
             /** Writes a value (which might not belong to this adapter) into the states DB only if it has changed. */
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 callback?: SetStateChangedCallback,
             ): void;
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 callback?: SetStateChangedCallback,
             ): void;
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options: unknown,
                 callback?: SetStateChangedCallback,
             ): void;
             setForeignStateChanged(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
                 callback?: SetStateChangedCallback,
@@ -896,17 +905,17 @@ declare global {
             /** Writes a value (which might not belong to this adapter) into the states DB only if it has changed. */
             setForeignStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack?: boolean,
             ): SetStateChangedPromise;
             setForeignStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 options?: unknown,
             ): SetStateChangedPromise;
             setForeignStateChangedAsync(
                 id: string,
-                state: string | number | boolean | State | SettableState | null,
+                state: State | StateValue | SettableState,
                 ack: boolean,
                 options: unknown,
             ): SetStateChangedPromise;
@@ -987,6 +996,12 @@ declare global {
              * @param options (optional) Some internal options.
              */
             getBinaryStateAsync(id: string, options?: unknown): GetBinaryStatePromise;
+
+            /** Deletes a binary state from the states DB */
+            delBinaryState(id: string, callback?: ErrorCallback): void;
+            delBinaryState(id: string, options: unknown, callback?: ErrorCallback): void;
+            /** Deletes a binary state from the states DB */
+            delBinaryStateAsync(id: string, options?: unknown): Promise<void>;
 
             // ==============================
             // enums
@@ -1461,6 +1476,17 @@ declare global {
             ): Promise<void>;
 
             /**
+             * Checks if a file exists in the DB
+             */
+            fileExists(adapterName: string | null, path: string, callback: GenericCallback<boolean>): void;
+            fileExists(adapterName: string | null, path: string, options: unknown, callback: GenericCallback<boolean>): void;
+            fileExistsAsync(
+                adapterName: string | null,
+                path: string,
+                options?: unknown,
+            ): Promise<boolean>;
+
+            /**
              * Deletes a given file
              * @param adapterName - adapter name. If adapter name is null, default will be the name of the current adapter.
              * @param path - path to directory without adapter name. E.g. If you want to delete "/vis.0/main/views.json", here must be "/main/views.json" and _adapter must be equal to "vis.0".
@@ -1521,7 +1547,7 @@ declare global {
              * Checks if a given feature is supported by the current installation
              * @param featureName The name of the feature to test for
              */
-            supportsFeature?: (featureName: string) => boolean;
+            supportsFeature?: ((featureName: string) => boolean) | undefined;
 
             /**
              * Returns an instance of a loaded plugin
@@ -1657,7 +1683,7 @@ declare global {
 
         type DeleteStateCallback = (err?: Error | null, id?: string) => void;
 
-        type GetHistoryResult = Array<State & { id?: string }>;
+        type GetHistoryResult = Array<State & { id?: string | undefined }>;
         type GetHistoryCallback = (
             err: Error | null,
             result?: GetHistoryResult,
@@ -1674,11 +1700,11 @@ declare global {
             /** Whether this is a directory or a file */
             isDir: boolean;
             /** Access rights */
-            acl?: EvaluatedFileACL;
+            acl?: EvaluatedFileACL | undefined;
             /** Date of last modification */
-            modifiedAt?: number;
+            modifiedAt?: number | undefined;
             /** Date of creation */
-            createdAt?: number;
+            createdAt?: number | undefined;
         }
         type ReadDirCallback = (err?: NodeJS.ErrnoException | null, entries?: ReadDirResult[]) => void;
         type ReadDirPromise = Promise<NonNullCallbackReturnTypeOf<ReadDirCallback>>;
@@ -1703,7 +1729,7 @@ declare global {
             /** Date of creation */
             createdAt: number;
         }
-        type ChownFileCallback = (err?: NodeJS.ErrnoException | null, entries?: ChownFileResult[], id?: string) => void;
+        type ChownFileCallback = (err?: NodeJS.ErrnoException | null, processed?: ChownFileResult[]) => void;
 
         /** Contains the return values of rm */
         interface RmResult {

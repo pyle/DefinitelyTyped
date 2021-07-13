@@ -2,20 +2,27 @@
 // Project: https://github.com/ZER0/bero
 // Definitions by: Alessandro Rabitti <https://github.com/silversonicaxel>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 4.1
 
-export type Block = string;
+declare function bem(block?: string, element?: string): bem.Bemmed;
+declare function bem(block: string, element: bem.Modifier | undefined): string;
+declare function bem(block: string, element: bem.Element, modifier: bem.Modifier): string;
 
-export type Element = string | { [index: string]: any } | Array<string | undefined>;
+declare namespace bem {
+    function join(...arguments: Joiner): Joined;
 
-export type Modifier = { [index: string]: any } | Array<string | undefined>;
+    type Block = string;
 
-export type Bemmed = (arg1?: Element | Modifier, arg2?: Modifier) => string;
+    type Element = string | { [index: string]: any } | Array<string | undefined | boolean>;
 
-export type Joiner = string[];
+    type Modifier = { [index: string]: any } | Array<string | undefined | boolean>;
 
-export type Joined = string;
+    type Bemmed = (arg1?: Element | Modifier, arg2?: Modifier) => string | undefined;
 
-export default function bem(block?: string, element?: Element, modifier?: Modifier): Bemmed;
+    type Joiner = Array<string | undefined | boolean>;
 
-export function join(...arguments: Joiner): Joined;
+    type Joined = string;
+}
+
+export as namespace bem;
+
+export = bem;
